@@ -73,6 +73,45 @@ module.exports = function(grunt) {
     return result;
   }
 
+// A method for downloading a single file
+  function sftpGet(file, cb) {
+    var fromFile = file[0] && file[0] || "",
+    toFile = file[1] && file[1] || "",
+    from, to, localPath;
+    // console.log(fromFile + ' to ' + toFile);
+    log.write(fromFile + ' to ' + toFile);
+
+    localPath = path.dirname(toFile);
+    if ( !fs.existsSync(localPath) ) {
+      fs.mkdirSync(localPath, 0777, true);
+    }
+    to = fs.createWriteStream(toFile, {
+      flags: 'w',
+      mode: 0777
+    });
+    from = sftpConn.createReadStream(fromFile);
+    // var to = process.stdout;
+
+    to.on('data', function(){
+      // console.log('fs.data ', toFile);
+      process.stdout.write('.');
+    });
+
+    to.on('close', function(){
+//    console.log('fs.close to', toFile);
+//    sftpConn.end();
+    });
+
+    from.on('close', function(){
+      // console.log('sftp.close from', fromFile);
+      process.stdout.write(' done'+"\n");
+      // sftpConn.end();
+      cb(null);
+    });
+
+    to.pipe(from);
+  }
+
   // A method for uploading a single file
   function sftpPut(inFilename, cb) {
     var fromFile, toFile, from, to;
