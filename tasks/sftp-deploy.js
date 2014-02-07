@@ -15,7 +15,7 @@ module.exports = function(grunt) {
   var log = grunt.log;
   var _ = grunt.util._;
   var file = grunt.file;
-  var fs = require('fs');
+  var fs = require('node-fs');
   var path = require('path');
   var util = require('util');
   var SSHConnection = require('ssh2');
@@ -98,41 +98,32 @@ module.exports = function(grunt) {
     // console.log(fromFile + ' to ' + toFile);
     log.write(fromFile + ' to ' + toFile);
 
-    sftpConn.fastPut( fromFile, toFile, function(err){
-      if (err){
-        log.write((' Error uploading file: ' + err.message).red + '\n');
-        cb(false);
-      } else {
-        log.write(' done'.green + '\n' );
-        cb(null);
-      }
-    } );
 
-//    from = fs.createReadStream(fromFile);
-//    to = sftpConn.createWriteStream(toFile, {
-//      flags: 'w',
-//      mode: 0644
-//    });
-//    // var to = process.stdout;
-//
-//    from.on('data', function(){
-//      // console.log('fs.data ', inFilename);
-//      process.stdout.write('.');
-//    });
-//
-//    from.on('close', function(){
-////       console.log('fs.close from', inFilename);
-//      // sftpConn.end();
-//    });
-//
-//    to.on('close', function(){
-//      // console.log('sftp.close to', inFilename);
-//      process.stdout.write(' done'+"\n");
-//      // sftpConn.end();
-//      cb(null);
-//    });
-//
-//    from.pipe(to);
+    from = fs.createReadStream(fromFile);
+    to = sftpConn.createWriteStream(toFile, {
+      flags: 'w',
+      mode: 0644
+    });
+    // var to = process.stdout;
+
+    from.on('data', function(){
+      // console.log('fs.data ', inFilename);
+      process.stdout.write('.');
+    });
+
+    from.on('close', function(){
+    // console.log('fs.close from', inFilename);
+    // sftpConn.end();
+    });
+
+    to.on('close', function(){
+      // console.log('sftp.close to', inFilename);
+      process.stdout.write(' done'+"\n");
+      // sftpConn.end();
+      cb(null);
+    });
+
+    from.pipe(to);
   }
 
   // A method that processes a location - changes to a folder and uploads all respective files
