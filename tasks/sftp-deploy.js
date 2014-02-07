@@ -227,9 +227,17 @@ module.exports = function(grunt) {
 
   // The main grunt task
   grunt.registerMultiTask('sftp-deploy', 'Deploy code over SFTP', function() {
-    var done = this.async();
-    var connection = {};
-    var keyLocation;
+    var done = this.async(),
+    var connection = {},
+    var keyLocation,
+    var options = this.options({
+      host: false,
+      username: false,
+      password: false,
+      privateKey: false,
+      passphrase: false,
+      port: 22
+    });
 
     // Init
     sshConn = new SSHConnection();
@@ -238,35 +246,51 @@ module.exports = function(grunt) {
     remoteRoot = Array.isArray(this.data.dest) ? this.data.dest[0] : this.data.dest;
     remoteSep = this.data.server_sep ? this.data.server_sep : path.sep;
 
-    authVals = getAuthByKey(this.data.auth.authKey);
     exclusions = this.data.exclusions || [];
+    
+    function setOption(optionName) {
+      var option;
+      if ((!options[optionName]) && (option = grunt.option(optionName))) {
+        options[optionName] = option;
+      }
+    }
+    setOption('config');
 
-    toTransfer = dirParseSync(localRoot);
+    if (options.config && grunt.util._(options.config).isString()) {
+      this.requiresConfig(['sshconfig', options.config]);
+      var configOptions = grunt.config.get(['sshconfig', options.config]);
+      options = grunt.util._.extend(options, configOptions);
+    }
+
+    setOption('username');
+    setOption('password');
+    setOption('passphrase');
 
     connection = {
-      host: this.data.auth.host,
-      port: this.data.auth.port
+      host: options.host,
+      port: options.port
     };
 
-
     // Use either password or key-based login
-    if (authVals === null) {
-      grunt.warn('.ftppass seems to be missing or incomplete');
+    if (options.password === false && options.privateKey === false) {
+      grunt.warn('ssh credentials seems to be missing or incomplete');
     } else {
 
-      connection.username = authVals.username;
+      connection.username = options.username;
 
-      if (authVals.password === undefined) {
-        keyLocation = getKeyLocation(authVals.keyLocation);
+      if (options.password === false) {
+        keyLocation = getKeyLocation(options.privateKey);
         connection.privateKey = fs.readFileSync(keyLocation);
-        if (authVals.passphrase) connection.passphrase = authVals.passphrase;
+        if (options.passphrase) connection.passphrase = options.passphrase;
         log.ok('Logging in with key at ' + keyLocation);
       } else {
-        connection.password = authVals.password;
+        connection.password = options.password;
         log.ok('Logging in with username ' + authVals.username);
       }
 
     }
+
+    toTransfer = dirParseSync(localRoot);
 
     sshConn.connect(connection);
 
@@ -335,29 +359,43 @@ module.exports = function(grunt) {
     // Init
     sshConn = new SSHConnection();
 
-    authVals = getAuthByKey(this.data.auth.authKey);
-
-    connection = {
-      host: this.data.auth.host,
-      port: this.data.auth.port
-    };
-
-    // Use either password or key-based login
-    if (authVals === null) {
-      grunt.warn('.ftppass seems to be missing or incomplete');
-    } else {
-      connection.username = authVals.username;
-      if (authVals.password === undefined) {
-        keyLocation = getKeyLocation(authVals.keyLocation);
-        connection.privateKey = fs.readFileSync(keyLocation);
-        if (authVals.passphrase) connection.passphrase = authVals.passphrase;
-        log.ok('Logging in with key at ' + keyLocation);
-      } else {
-        connection.password = authVals.password;
-        log.ok('Logging in with username ' + authVals.username);
+    function setOption(optionName) {
+      var option;
+      if ((!options[optionName]) && (option = grunt.option(optionName))) {
+        options[optionName] = option;
       }
     }
+    setOption('config');
 
+    if (options.config && grunt.util._(options.config).isString()) {
+      this.requiresConfig(['sshconfig', options.config]);
+      var configOptions = grunt.config.get(['sshconfig', options.config]);
+      options = grunt.util._.extend(options, configOptions);
+    }
+
+    setOption('username');
+    setOption('password');
+    setOption('passphrase');
+
+    // Use either password or key-based login
+    if (options.password === false && options.privateKey === false) {
+      grunt.warn('ssh credentials seems to be missing or incomplete');
+    } else {
+
+      connection.username = options.username;
+
+      if (options.password === false) {
+        keyLocation = getKeyLocation(options.privateKey);
+        connection.privateKey = fs.readFileSync(keyLocation);
+        if (options.passphrase) connection.passphrase = options.passphrase;
+        log.ok('Logging in with key at ' + keyLocation);
+      } else {
+        connection.password = options.password;
+        log.ok('Logging in with username ' + authVals.username);
+      }
+
+    }
+    
     sshConn.connect(connection);
 
     sshConn.on('connect', function () {
