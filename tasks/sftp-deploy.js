@@ -142,7 +142,7 @@ module.exports = function(grunt) {
     from = fs.createReadStream(fromFile);
     to = sftpConn.createWriteStream(toFile, {
       flags: 'w',
-      mode: 0644
+      mode: 0777
     });
     // var to = process.stdout;
 
