@@ -324,4 +324,90 @@ module.exports = function(grunt) {
       return false;
     }
   });
+
+  // The main grunt task
+  grunt.registerMultiTask('sftp-grab', 'Grab files over SFTP', function() {
+    var done = this.async();
+    var connection = {};
+    var elements = this.data.files && this.data.files || [];
+
+    // Init
+    sshConn = new SSHConnection();
+
+    authVals = getAuthByKey(this.data.auth.authKey);
+
+    connection = {
+      host: this.data.auth.host,
+      port: this.data.auth.port
+    };
+
+    // Use either password or key-based login
+    if (authVals === null) {
+      grunt.warn('.ftppass seems to be missing or incomplete');
+    } else {
+      connection.username = authVals.username;
+      if (authVals.password === undefined) {
+        keyLocation = getKeyLocation(authVals.keyLocation);
+        connection.privateKey = fs.readFileSync(keyLocation);
+        if (authVals.passphrase) connection.passphrase = authVals.passphrase;
+        log.ok('Logging in with key at ' + keyLocation);
+      } else {
+        connection.password = authVals.password;
+        log.ok('Logging in with username ' + authVals.username);
+      }
+    }
+
+    sshConn.connect(connection);
+
+    sshConn.on('connect', function () {
+      // console.log('Connection :: connect');
+    });
+    sshConn.on('error', function (err) {
+      console.log('Connection :: error ::', err);
+    });
+    sshConn.on('end', function () {
+      // console.log('Connection :: end');
+    });
+    sshConn.on('close', function (had_error) {
+      // console.log('Connection :: close', had_error);
+    });
+
+    sshConn.on('ready', function () {
+      // console.log('Connection :: ready');
+
+      sshConn.sftp(function (err, sftp) {
+        if (err) throw err;
+
+        sftpConn = sftp;
+
+        sftp.on('end', function () {
+          // console.log('SFTP :: SFTP session closed');
+          // console.trace();
+        });
+        sftp.on('close', function () {
+          // console.log('SFTP :: close');
+          // console.trace();
+          sshConn.end();
+        });
+        sftp.on('error', function (e) {
+          console.log('SFTP :: error', e);
+          sshConn.end();
+        });
+        sftp.on('open', function (e) {
+          // console.log('SFTP :: open');
+        });
+
+        // Iterating through all files couple
+        async.forEachLimit(elements, 1, sftpGet, function () {
+          log.ok('Uploads done.');
+          sftp.end();
+          done();
+        });
+      });
+    });
+
+    if (grunt.errors) {
+      return false;
+    }
+  });
 };
