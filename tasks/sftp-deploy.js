@@ -228,9 +228,9 @@ module.exports = function(grunt) {
   // The main grunt task
   grunt.registerMultiTask('sftp-deploy', 'Deploy code over SFTP', function() {
     var done = this.async(),
-    var connection = {},
-    var keyLocation,
-    var options = this.options({
+    connection = {},
+    keyLocation,
+    options = this.options({
       host: false,
       username: false,
       password: false,
@@ -268,15 +268,14 @@ module.exports = function(grunt) {
 
     connection = {
       host: options.host,
-      port: options.port
+      port: options.port,
+      username: options.username
     };
 
     // Use either password or key-based login
     if (options.password === false && options.privateKey === false) {
       grunt.warn('ssh credentials seems to be missing or incomplete');
     } else {
-
-      connection.username = options.username;
 
       if (options.password === false) {
         keyLocation = getKeyLocation(options.privateKey);
@@ -352,9 +351,17 @@ module.exports = function(grunt) {
 
   // The main grunt task
   grunt.registerMultiTask('sftp-grab', 'Grab files over SFTP', function() {
-    var done = this.async();
-    var connection = {};
-    var elements = this.data.files && this.data.files || [];
+    var done = this.async(),
+    connection = {},
+    elements = this.data.files && this.data.files || [],
+    options = this.options({
+      host: false,
+      username: false,
+      password: false,
+      privateKey: false,
+      passphrase: false,
+      port: 22
+    });
 
     // Init
     sshConn = new SSHConnection();
@@ -377,12 +384,16 @@ module.exports = function(grunt) {
     setOption('password');
     setOption('passphrase');
 
+    connection = {
+      host: options.host,
+      port: options.port,
+      username: options.username
+    };
+    
     // Use either password or key-based login
     if (options.password === false && options.privateKey === false) {
       grunt.warn('ssh credentials seems to be missing or incomplete');
     } else {
-
-      connection.username = options.username;
 
       if (options.password === false) {
         keyLocation = getKeyLocation(options.privateKey);
@@ -395,7 +406,7 @@ module.exports = function(grunt) {
       }
 
     }
-    
+
     sshConn.connect(connection);
 
     sshConn.on('connect', function () {
