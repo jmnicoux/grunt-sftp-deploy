@@ -284,7 +284,7 @@ module.exports = function(grunt) {
         log.ok('Logging in with key at ' + keyLocation);
       } else {
         connection.password = options.password;
-        log.ok('Logging in with username ' + authVals.username);
+        log.ok('Logging in with username ' + options.username);
       }
 
     }
@@ -402,7 +402,7 @@ module.exports = function(grunt) {
         log.ok('Logging in with key at ' + keyLocation);
       } else {
         connection.password = options.password;
-        log.ok('Logging in with username ' + authVals.username);
+        log.ok('Logging in with username ' + options.username);
       }
 
     }
