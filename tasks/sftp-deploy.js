@@ -85,6 +85,7 @@ module.exports = function(grunt) {
     if ( !fs.existsSync(localPath) ) {
       fs.mkdirSync(localPath, 0777, true);
     }
+
     to = fs.createWriteStream(toFile, {
       flags: 'w',
       mode: 0777
@@ -109,7 +110,7 @@ module.exports = function(grunt) {
       cb(null);
     });
 
-    to.pipe(from);
+    from.pipe(to);
   }
 
   // A method for uploading a single file
@@ -184,7 +185,7 @@ module.exports = function(grunt) {
     remotePath = remoteRoot + (remoteInPath == remoteSep ? remoteInPath : remoteSep + remoteInPath);
 
     sftpConn.mkdir(remotePath, {mode: 0755}, function(err) {
-      console.log('mkdir ' + remotePath, err ? 'error or dir exists' : 'ok');
+      // console.log('mkdir ' + remotePath, err ? 'error or dir exists' : 'ok');
 
       // console.log(async);
       async.forEachLimit(files, 1, sftpPut, function (err) {
