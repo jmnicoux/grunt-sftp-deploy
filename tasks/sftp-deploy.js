@@ -126,8 +126,8 @@ module.exports = function(grunt) {
       fs.mkdirSync(localPath, 0777, true);
     }
 
-    to = fs.createReadStream(fromFile);
-    from = sftpConn.createWriteStream(toFile, {
+    from = fs.createReadStream(fromFile);
+    to = sftpConn.createWriteStream(toFile, {
       flags: 'w',
       mode: 0777
     });
