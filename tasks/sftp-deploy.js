@@ -305,6 +305,8 @@ module.exports = function(grunt) {
     setOption('username');
     setOption('password');
     setOption('passphrase');
+    setOption('privateKey');
+    setOption('host');
     setOption('dest');
 
     remoteRoot = options.dest;
@@ -426,6 +428,9 @@ module.exports = function(grunt) {
     setOption('username');
     setOption('password');
     setOption('passphrase');
+    setOption('privateKey');
+    setOption('host');
+    setOption('dest');
 
     connection = {
       host: options.host,
@@ -538,6 +543,9 @@ module.exports = function(grunt) {
     setOption('username');
     setOption('password');
     setOption('passphrase');
+    setOption('privateKey');
+    setOption('host');
+    setOption('dest');
 
     connection = {
       host: options.host,
