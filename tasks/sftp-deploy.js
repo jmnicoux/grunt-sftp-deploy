@@ -277,7 +277,7 @@ module.exports = function(grunt) {
       privateKey: false,
       passphrase: false,
       port: 22,
-      dest: Array.isArray(this.data.dest) ? this.data.dest[0] : this.data.dest;
+      dest: Array.isArray(this.data.dest) ? this.data.dest[0] : this.data.dest
     });
 
     // Init
