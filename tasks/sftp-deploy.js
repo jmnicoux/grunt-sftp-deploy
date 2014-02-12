@@ -276,14 +276,14 @@ module.exports = function(grunt) {
       password: false,
       privateKey: false,
       passphrase: false,
-      port: 22
+      port: 22,
+      dest: Array.isArray(this.data.dest) ? this.data.dest[0] : this.data.dest;
     });
 
     // Init
     sshConn = new SSHConnection();
 
     localRoot = Array.isArray(this.data.src) ? this.data.src[0] : this.data.src;
-    remoteRoot = Array.isArray(this.data.dest) ? this.data.dest[0] : this.data.dest;
     remoteSep = this.data.server_sep ? this.data.server_sep : path.sep;
 
     exclusions = this.data.exclusions || [];
@@ -305,6 +305,9 @@ module.exports = function(grunt) {
     setOption('username');
     setOption('password');
     setOption('passphrase');
+    setOption('dest');
+
+    remoteRoot = options.dest;
 
     connection = {
       host: options.host,
